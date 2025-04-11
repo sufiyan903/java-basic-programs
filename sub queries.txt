@@ -1,0 +1,27 @@
+sub queries;
+avg(salary)
+max(salary)
+min(salary)
+count
+select count(ssn) as NO_of_Emp from employee;
+sub queries;
+avg(salary)
+max(salary)
+min(salary)
+group by
+count
+select avg(salary),sex from employee group by sex;
+sub queries;
+avg(salary)
+max(salary)
+min(salary)
+group by
+count
+select avg(salary),super_ssn,sex from employee group by super_ssn, sex;
+sub queries;
+avg(salary)
+max(salary)
+min(salary)
+group by
+count
+select max(salary),sex,bdate from employee where bdate>'20-JUN-41',group by sex;

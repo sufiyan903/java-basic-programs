@@ -1,0 +1,5 @@
+select from where
+Houston TX
+
+select fname,ssn,salary from employee where salary >(
+select salary from employee where fname='Joyce');

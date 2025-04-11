@@ -1,0 +1,240 @@
+-- Create the Book table
+CREATE TABLE Book (
+    BookID INT PRIMARY KEY,
+    Title VARCHAR(255),
+    Author VARCHAR(255),
+    ISBN VARCHAR(20),
+    PublicationYear INT
+);
+
+-- Create the LibraryMember table
+CREATE TABLE LibraryMember (
+    MemberID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Address VARCHAR(255),
+    Email VARCHAR(100),
+    Phone VARCHAR(20)
+);
+
+-- Create the LibraryStaff table
+CREATE TABLE LibraryStaff (
+    StaffID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Role VARCHAR(50),
+    Email VARCHAR(100),
+    Phone VARCHAR(20)
+);
+
+-- Create the Checkout table
+CREATE TABLE Checkout (
+    CheckoutID INT PRIMARY KEY,
+    CheckoutDate DATE,
+    DueDate DATE,
+    BookID INT,
+    MemberID INT,
+    FOREIGN KEY (BookID) REFERENCES Book(BookID),
+    FOREIGN KEY (MemberID) REFERENCES LibraryMember(MemberID)
+);
+
+-- Create the ManagedBy table to represent the "Managed By" relationship
+CREATE TABLE ManagedBy (
+    StaffID INT,
+    MemberID INT,
+    PRIMARY KEY (StaffID, MemberID),
+    FOREIGN KEY (StaffID) REFERENCES LibraryStaff(StaffID),
+    FOREIGN KEY (MemberID) REFERENCES LibraryMember(MemberID)
+);
+-- Insert data into the Book table with mixed-number BookIDs
+
+INSERT INTO Book (BookID, Title, Author, ISBN, PublicationYear)
+VALUES
+    (101, 'To Kill a Mockingbird', 'Harper Lee', '9780061120084', 1960);
+
+INSERT INTO Book (BookID, Title, Author, ISBN, PublicationYear)
+VALUES
+    (202, '1984', 'George Orwell', '9780451524935', 1949);
+
+INSERT INTO Book (BookID, Title, Author, ISBN, PublicationYear)
+VALUES
+    (303, 'Pride and Prejudice', 'Jane Austen', '9780141439518', 1813);
+
+    
+
+-- Insert data into the LibraryMember table with mixed-number MemberIDs
+
+INSERT INTO LibraryMember (MemberID, Name, Address, Email, Phone)
+VALUES
+    (501, 'John Smith', '123 Main St, Anytown', 'john.smith@email.com', '123-456-7890');
+
+INSERT INTO LibraryMember (MemberID, Name, Address, Email, Phone)
+VALUES
+    (702, 'Alice Johnson', '456 Elm St, Anycity', 'alice.johnson@email.com', '987-654-3210');
+
+   
+-- Insert data into the LibraryStaff table with mixed-number StaffIDs
+
+INSERT INTO LibraryStaff (StaffID, Name, Role, Email, Phone)
+VALUES
+    (901, 'Emily Davis', 'Librarian', 'emily.davis@email.com', '555-555-5555');
+
+INSERT INTO LibraryStaff (StaffID, Name, Role, Email, Phone)
+VALUES
+    (1102, 'Michael Brown', 'Assistant Librarian', 'michael.brown@email.com', '666-666-6666');
+
+    
+
+-- Insert data into the Checkout table with mixed-number CheckoutIDs
+
+INSERT INTO Checkout (CheckoutID, CheckoutDate, DueDate, BookID, MemberID)
+VALUES
+    (1001, TO_DATE('2023-10-01', 'YYYY-MM-DD'), TO_DATE('2023-10-15', 'YYYY-MM-DD'), 101, 501);
+
+INSERT INTO Checkout (CheckoutID, CheckoutDate, DueDate, BookID, MemberID)
+VALUES
+    (2002, TO_DATE('2023-10-02', 'YYYY-MM-DD'), TO_DATE('2023-10-16', 'YYYY-MM-DD'), 202, 702);
+
+
+-- Insert data into the ManagedBy table with mixed-number StaffIDs and MemberIDs
+
+INSERT INTO ManagedBy (StaffID, MemberID)
+VALUES
+    (901, 501);
+
+INSERT INTO ManagedBy (StaffID, MemberID)
+VALUES
+    (1102, 702);
+-- to find the most popular book with the highest number of checkouts
+SELECT Title
+FROM (
+    SELECT Book.Title, COUNT(Checkout.CheckoutID) AS CheckoutCount
+    FROM Book, Checkout
+    WHERE Book.BookID = Checkout.BookID
+    GROUP BY Book.Title
+    ORDER BY CheckoutCount DESC
+)
+WHERE ROWNUM = 1;
+
+--library staff contacts
+SELECT Name, Email, Phone
+FROM LibraryStaff;
+
+ -- late returns   
+SELECT LibraryMember.Name, AVG(DueDate - CheckoutDate) AS AverageDelay
+FROM Checkout, LibraryMember
+WHERE Checkout.MemberID = LibraryMember.MemberID
+AND DueDate < SYSDATE
+GROUP BY LibraryMember.Name;
+
+--member looks up
+SELECT Name, Address, Phone
+FROM LibraryMember
+WHERE Email = 'john.smith@email.com';
+SELECT COUNT(*) AS TotalBooks
+FROM Book;
+
+SELECT SUM(1) AS TotalCheckouts
+FROM Checkout;
+
+SELECT AVG(DueDate - CheckoutDate) AS AverageDelay
+FROM Checkout
+WHERE DueDate < SYSDATE;
+
+SELECT MIN(PublicationYear) AS EarliestPublicationYear
+FROM Book;
+
+SELECT MAX(PublicationYear) AS LatestPublicationYear
+FROM Book;
+
+ALTER TABLE Book
+MODIFY ISBN VARCHAR2(13);
+ 
+ALTER TABLE LibraryMember
+MODIFY Phone VARCHAR2(15);
+
+ALTER TABLE LibraryStaff
+MODIFY Phone VARCHAR2(15);
+
+ALTER TABLE Book
+ADD CONSTRAINT Unique_ISBN UNIQUE (ISBN);
+ALTER TABLE LibraryMember
+ADD CONSTRAINT Unique_Email_Member UNIQUE (Email);
+
+ALTER TABLE LibraryStaff
+ADD CONSTRAINT Unique_Email_Staff UNIQUE (Email);
+
+-- Drop the Email column from the LibraryMember table
+ALTER TABLE LibraryMember
+DROP COLUMN Email;
+
+UPDATE LibraryMember
+SET Address = '789 Oak St, Anycity'
+WHERE MemberID = 702;
+
+DELETE FROM Book
+WHERE BookID = 303;
+
+INSERT INTO Book (BookID, Title, Author, ISBN, PublicationYear)
+VALUES
+    (404, 'The Great Gatsby', 'F. Scott Fitzgerald', '9780743273565', 1925);
+
+UPDATE LibraryStaff
+SET Role = 'Senior Librarian'
+WHERE StaffID = 901;
+
+DELETE FROM Checkout
+WHERE CheckoutID = 1001;
+
+
+SELECT Book.Title, Checkout.CheckoutDate, Checkout.DueDate
+FROM Checkout
+INNER JOIN Book ON Checkout.BookID = Book.BookID
+WHERE Checkout.MemberID = 501;
+
+SELECT LibraryStaff.Name, LibraryStaff.Role
+FROM LibraryStaff
+INNER JOIN ManagedBy ON LibraryStaff.StaffID = ManagedBy.StaffID
+WHERE ManagedBy.MemberID = 702;
+
+SELECT Book.Title, COUNT(Checkout.CheckoutID) AS TotalCheckouts
+FROM Book
+LEFT JOIN Checkout ON Book.BookID = Checkout.BookID
+GROUP BY Book.Title;
+
+SELECT AVG(DueDate - CheckoutDate) AS AverageDelay
+FROM Checkout
+WHERE DueDate < SYSDATE;
+
+
+-- Maximum Publication Year
+SELECT MAX(PublicationYear) AS MaxPublicationYear
+FROM Book;
+
+-- Minimum Publication Year
+SELECT MIN(PublicationYear) AS MinPublicationYear
+FROM Book;
+
+CREATE OR REPLACE VIEW CheckedOutBooks AS
+SELECT LibraryMember.Name AS MemberName, Book.Title AS BookTitle, Checkout.CheckoutDate, Checkout.DueDate
+FROM LibraryMember
+INNER JOIN Checkout ON LibraryMember.MemberID = Checkout.MemberID
+INNER JOIN Book ON Checkout.BookID = Book.BookID;
+
+CREATE OR REPLACE VIEW StaffContacts AS
+SELECT Name AS StaffName, Role AS StaffRole, Email AS StaffEmail, Phone AS StaffPhone
+FROM LibraryStaff;
+
+
+CREATE OR REPLACE VIEW MembersWithOverdueBooks AS
+SELECT LibraryMember.Name AS MemberName, COUNT(Checkout.CheckoutID) AS OverdueCount
+FROM LibraryMember
+INNER JOIN Checkout ON LibraryMember.MemberID = Checkout.MemberID
+WHERE DueDate < SYSDATE
+GROUP BY LibraryMember.Name;
+
+SELECT * FROM CheckedOutBooks;
+
+
+
+
+
+

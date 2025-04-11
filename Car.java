@@ -1,0 +1,30 @@
+public class Car{
+private String model;
+private int currentspeed;
+public Car(String model){
+this.model=model;
+this.currentspeed=0;
+}
+private String getmodel(){
+return model;
+}
+private int getcurrentspeed(){
+return currentspeed;
+}
+public void accerlate(int speedincrement){
+if(speedincrement>0){
+currentspeed+=speedincrement;
+System.out.println("accerlate.currentspeed"+currentspeed+"km/hr");
+}else{
+System.out.println("invalid speedincrement,speed increment must be greater than 0");
+  }
+}
+public static void main(String[]args){
+Car mycar=new Car("toyato");
+System.out.println("model"+mycar.getmodel());
+System.out.println("currentspeed"+mycar.getcurrentspeed());
+mycar.accerlate(20);
+mycar.accerlate(15);
+System.out.println("updated currentspeed"+mycar.getcurrentspeed()+"km/hr");
+ }
+}
